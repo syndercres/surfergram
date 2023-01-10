@@ -6,7 +6,7 @@ import { getEnvVarOrFail } from "./support/envVarUtils";
 import { setupDBClientConfig } from "./support/setupDBClientConfig";
 
 //--------------------------------------------------------------------------------Read .env file lines as though they were env vars.
-dotenv.config(); 
+dotenv.config();
 
 const dbClientConfig = setupDBClientConfig();
 const client = new Client(dbClientConfig);
@@ -34,26 +34,30 @@ app.get("/health-check", async (req, res) => {
 });
 //--------------------------------------------------------------------------------Gets all pastes from database
 app.get("/spots", async (req, res) => {
-  const pasteList = await client.query(
-    "SELECT * FROM spots ORDER BY name"
-  );
+  const pasteList = await client.query("SELECT * FROM spots ORDER BY name");
   res.status(200).json(pasteList);
 });
 //--------------------------------------------------------------------------------Posts a new paste and adds it to database
 app.post("/spots", async (req, res) => {
-    // to be rigorous, ought to handle non-conforming request bodies
-    // ... but omitting this as a simplification
-    const newSpotName = req.body.name;
-    const newSpotDirections = req.body.directions;
-    const newSpotRating = req.body.rating;
-    const newSpotDescription = req.body.description
-    const text =  "INSERT INTO spots(name, directions, rating, description) VALUES($1, $2, $3, $4) RETURNING *";
-    const values = [newSpotName, newSpotDirections, newSpotRating, newSpotDescription];
-  
-    const postData = await client.query(text, values);
-  
-    res.status(201).json(postData);
-  });
+  // to be rigorous, ought to handle non-conforming request bodies
+  // ... but omitting this as a simplification
+  const newSpotName = req.body.name;
+  const newSpotDirections = req.body.directions;
+  const newSpotRating = req.body.rating;
+  const newSpotDescription = req.body.description;
+  const text =
+    "INSERT INTO spots(name, directions, rating, description) VALUES($1, $2, $3, $4) RETURNING *";
+  const values = [
+    newSpotName,
+    newSpotDirections,
+    newSpotRating,
+    newSpotDescription,
+  ];
+
+  const postData = await client.query(text, values);
+
+  res.status(201).json(postData);
+});
 
 //--------------------------------------------------------------------------------Deletes all data from database
 app.delete("/delete", async (req, res) => {
@@ -75,8 +79,9 @@ app.post("/comments", async (req, res) => {
   const spotId = req.body.spot_id;
   const newCommentName = req.body.name;
   const newComment = req.body.comment;
-  const newCommentRating = req.body.rating
-  const text =  "INSERT INTO comments(spot_id,name, comment,rating) VALUES($1, $2, $3, $4) RETURNING *";
+  const newCommentRating = req.body.rating;
+  const text =
+    "INSERT INTO comments(spot_id,name, comment,rating) VALUES($1, $2, $3, $4) RETURNING *";
   const values = [spotId, newCommentName, newComment, newCommentRating];
 
   const postData = await client.query(text, values);
