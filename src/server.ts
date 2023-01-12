@@ -72,6 +72,34 @@ app.delete("/delete", async (req, res) => {
     res.status(500).send("An error occurred. Check server logs.");
   }
 });
+
+app.delete<{ spot_id: string }>("/spots/:spot_id", async (req, res) => {
+  const deleteSpot = req.params.spot_id;
+  if (deleteSpot === "not found") {
+    res.status(404).json(deleteSpot);
+  } else {
+    await client.query(`DELETE FROM comments WHERE spot_id = ${deleteSpot}`);
+    await client.query(`DELETE FROM spots WHERE spot_id = ${deleteSpot}`);
+
+    res.status(200).json(deleteSpot);
+  }
+});
+
+app.delete<{ comment_id: string }>(
+  "/comments/:comment_id",
+  async (req, res) => {
+    const deleteComment = req.params.comment_id;
+    if (deleteComment === "not found") {
+      res.status(404).json(deleteComment);
+    } else {
+      await client.query(
+        `DELETE FROM spots WHERE comment_id = ${deleteComment}`
+      );
+      res.status(200).json(deleteComment);
+    }
+  }
+);
+
 //--------------------------------------------------------------------------------Adds new comment to comment table
 app.post("/comments", async (req, res) => {
   // to be rigorous, ought to handle non-conforming request bodies
@@ -92,12 +120,8 @@ app.post("/comments", async (req, res) => {
 app.get("/comments", async (req, res) => {
   const commentList = await client.query(
     "SELECT * FROM comments ORDER BY comment_id DESC"
-  ); // await client.query('select "id", "name", "text" from paste_bin');
+  );
   res.status(200).json(commentList);
-  // app.get("/pastes", (req, res) => {
-  //   const allSignatures = getAllDbItems();
-  //   res.status(200).json(allSignatures);
-  // });
 });
 
 //--------------------------------------------------------------------------------Connecting to database
