@@ -39,18 +39,18 @@ app.get("/spots", async (req, res) => {
   res.status(200).json(spotList);
 });
 //--------------------------------------------------------------------------------GETs a spot by ID
-app.get<{spot_id: number}>("/spots/:spot_id", async (req,res)=>{
-    const chosenSpot = req.params.spot_id;
-    
+app.get<{ spot_id: number }>("/spots/:spot_id", async (req, res) => {
+  const chosenSpot = req.params.spot_id;
 
-    const get_spot = await client.query("SELECT * FROM spots WHERE spot_id = $1",[chosenSpot])
- 
-    res.status(201).json(get_spot)
-})
+  const get_spot = await client.query(
+    "SELECT * FROM spots WHERE spot_id = $1",
+    [chosenSpot]
+  );
+
+  res.status(201).json(get_spot);
+});
 //--------------------------------------------------------------------------------Posts a new spot and adds it to database
 app.post("/spots", async (req, res) => {
-
-
   const newSpotName = req.body.name;
   const newSpotDirections = req.body.directions;
   const newSpotRating = req.body.rating;
@@ -69,16 +69,17 @@ app.post("/spots", async (req, res) => {
   res.status(201).json(postData);
 });
 //--------------------------------------------------------------------------------Updates a spot to average a new rating
-app.patch<{spot_id: number}>("/spots/:spot_id", async (req,res)=>{
-    const patch_spot = req.params.spot_id;
-    const patch_rating = req.body.rating 
+app.patch<{ spot_id: number }>("/spots/:spot_id", async (req, res) => {
+  const patch_spot = req.params.spot_id;
+  const patch_rating = req.body.rating;
 
-    const update_rating = await client.query("UPDATE spots SET rating = ((spots.rating + $1) / 2 )WHERE spot_id = $2",[patch_rating,patch_spot])
- 
-    res.status(201).json(update_rating)
-})
+  const update_rating = await client.query(
+    "UPDATE spots SET rating = (spots.rating + $1)/2 WHERE spot_id = $2",
+    [patch_rating, patch_spot]
+  );
 
-
+  res.status(201).json(update_rating);
+});
 
 //--------------------------------------------------------------------------------Deletes all data from database
 app.delete("/delete", async (req, res) => {
@@ -109,20 +110,22 @@ app.delete<{ spot_id: string }>("/spots/:spot_id", async (req, res) => {
 //--------------------------------------------------------------------------------COMMENTS SECTION
 //--------------------------------------------------------------------------------gets comments from comment table
 app.get("/comments", async (req, res) => {
-    const commentList = await client.query(
-      "SELECT * FROM comments ORDER BY comment_id DESC"
-    );
-    res.status(200).json(commentList);
-  });
+  const commentList = await client.query(
+    "SELECT * FROM comments ORDER BY comment_id DESC"
+  );
+  res.status(200).json(commentList);
+});
 //--------------------------------------------------------------------------------gets comments b y spot id
-  app.get<{spot_id: number}>("/spots/:spot_id", async (req,res)=>{
-    const chosenSpot = req.params.spot_id;
-    
+app.get<{ spot_id: number }>("/comments/:spot_id", async (req, res) => {
+  const chosenSpot = req.params.spot_id;
 
-    const get_comments = await client.query("SELECT * FROM comments WHERE spot_id = $1",[chosenSpot])
- 
-    res.status(201).json(get_comments)
-})
+  const get_comments = await client.query(
+    "SELECT * FROM comments WHERE spot_id = $1 ORDER BY comment_id DESC",
+    [chosenSpot]
+  );
+
+  res.status(201).json(get_comments);
+});
 //--------------------------------------------------------------------------------Adds new comment to comment table
 app.post("/comments", async (req, res) => {
   // to be rigorous, ought to handle non-conforming request bodies
@@ -137,26 +140,24 @@ app.post("/comments", async (req, res) => {
 
   const postData = await client.query(text, values);
 
-
   res.status(201).json(postData);
 });
 
-
 //--------------------------------------------------------------------------------DELETES a comment by comment id
 app.delete<{ comment_id: string }>(
-    "/comments/:comment_id",
-    async (req, res) => {
-      const deleteComment = req.params.comment_id;
-      if (deleteComment === "not found") {
-        res.status(404).json(deleteComment);
-      } else {
-        await client.query(
-          `DELETE FROM spots WHERE comment_id = ${deleteComment}`
-        );
-        res.status(200).json(deleteComment);
-      }
+  "/comments/:comment_id",
+  async (req, res) => {
+    const deleteComment = req.params.comment_id;
+    if (deleteComment === "not found") {
+      res.status(404).json(deleteComment);
+    } else {
+      await client.query(
+        `DELETE FROM spots WHERE comment_id = ${deleteComment}`
+      );
+      res.status(200).json(deleteComment);
     }
-  );
+  }
+);
 
 //--------------------------------------------------------------------------------Connecting to database
 connectToDBAndStartListening();
