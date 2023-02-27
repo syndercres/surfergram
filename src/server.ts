@@ -143,6 +143,14 @@ app.post("/comments", async (req, res) => {
   res.status(201).json(postData);
 });
 
+//--------------------------------------------------------------------------------Gets 3 most recent comments
+app.get("/recent-comments", async (req, res) => {
+  const commentList = await client.query(
+    "SELECT spot_id, name, comment, rating FROM comments ORDER BY comment_id DESC LIMIT 5"
+  );
+  res.status(200).json(commentList);
+});
+
 //--------------------------------------------------------------------------------DELETES a comment by comment id
 app.delete<{ comment_id: string }>(
   "/comments/:comment_id",
